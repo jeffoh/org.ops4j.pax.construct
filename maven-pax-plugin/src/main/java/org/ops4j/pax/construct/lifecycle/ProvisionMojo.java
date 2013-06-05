@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -48,7 +49,6 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectBuilder;
 import org.apache.maven.project.ProjectBuildingException;
-import org.apache.maven.project.artifact.InvalidDependencyVersionException;
 import org.apache.maven.settings.Mirror;
 import org.apache.maven.settings.Settings;
 import org.codehaus.plexus.util.IOUtil;
@@ -208,6 +208,14 @@ public class ProvisionMojo extends AbstractMojo
      * @parameter expression="${noDeps}"
      */
     private boolean noDependencies;
+
+    /**
+     * When true, do not deploy the OSGI container with properties taken from the current maven context.  Useful
+     * when deploying from pom files with pre-existing properties that we do not wish to pass to the container.
+     *
+     * @parameter expression="${noProperties}" default-value="false"
+     */
+    private boolean noProperties;
 
     /**
      * Comma separated list of additional POMs with bundles as dependencies.
@@ -613,6 +621,9 @@ public class ProvisionMojo extends AbstractMojo
         deployProject.getModel().setPluginRepositories( null );
         deployProject.getModel().setReporting( null );
         deployProject.setBuild( null );
+        if (noProperties) {
+            deployProject.getModel().setProperties(new Properties());
+        }
 
         File deployFile = new File( deployProject.getBasedir(), "runner/deploy-pom.xml" );
 
